@@ -1,0 +1,28 @@
+---
+- name: install
+  yum: state=present name={{ item }}
+  with_items:
+    - tomcat
+    - tomcat-webapps
+    - tomcat-admin-webapps 
+
+
+- name: copy template
+  template: 
+      src: index.jsp.j2
+      dest: /var/lib/tomcat/webapps/ROOT/index.jsp 
+
+
+- name: start
+  service:
+     name: tomcat
+     state: started
+     enabled: True
+
+- name: 8080 port | open
+  firewalld:
+    zone: public 
+    port: 8080/tcp
+    permanent: True
+    state: enabled
+    immediate: True

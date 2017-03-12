@@ -1,0 +1,11 @@
+{
+    "server": false,
+    "datacenter": "lviv",
+    "data_dir": "/var/consul",
+    "encrypt": "{{ hostvars['balancer']['key']['stdout'] }}",
+    "log_level": "INFO",
+    "enable_syslog": true,
+    "ui": true,
+    "client_addr": "0.0.0.0",
+    "start_join": ["{{ hostvars['app1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['app2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera3']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}"]
+}

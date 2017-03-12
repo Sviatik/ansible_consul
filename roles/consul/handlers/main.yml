@@ -1,0 +1,8 @@
+---
+- name: start master consul
+  command: consul agent -server -bootstrap-expect=6 -data-dir=/var/lib/consul -node={{ inventory_hostname }} -bind={{ ansible_default_ipv4.address }} -config-dir=/etc/consul.d -ui -client=0.0.0.0
+  listen: consul master start
+
+- name: start slave consul
+  command: consul agent -data-dir=/var/lib/consul -node={{ inventory_hostname }} -bind={{ ansible_default_ipv4.address }} -config-dir=/etc/consul.d
+  listen: consul slave start

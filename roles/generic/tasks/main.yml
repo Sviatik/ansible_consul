@@ -1,0 +1,16 @@
+---
+- name: common soft
+  yum: state=present name={{ item }}
+  with_items: 
+        - unzip
+        - epel-release
+        - wget
+        - net-tools
+
+#- name: update system
+#  yum: name='*' state=latest
+
+- name: rename hostname 
+  hostname:
+    name: '{{ inventory_hostname }}'
+

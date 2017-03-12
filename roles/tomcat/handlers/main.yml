@@ -1,0 +1,6 @@
+---
+- name: apply env var
+  shell: '. ~/.bashrc'
+  become: True
+  become_method: sudo
+  listen: apply env

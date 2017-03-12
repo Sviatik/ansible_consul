@@ -1,0 +1,13 @@
+---
+- name: copy dump DB
+  copy:
+    src: addData.sql
+    dest: /tmp
+
+
+- name: Restore database
+  mysql_db:
+    name: _055_DB
+    state: import
+    target: /tmp/addData.sql
+  run_once: true

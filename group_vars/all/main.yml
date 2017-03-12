@@ -1,0 +1,8 @@
+---
+  mysql_user: mysql
+  mysql_pass: mysql524297
+  mysql_db: _055_DB
+  mysql_port: 3306
+  mysql_user_cluster: cluster
+  mysql_pass_cluster: mysql
+  consul_down_url: https://releases.hashicorp.com/consul/0.7.5/consul_0.7.5_linux_amd64.zip

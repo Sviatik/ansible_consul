@@ -1,0 +1,11 @@
+{
+    "bootstrap": true,
+    "server": true,
+    "datacenter": "lviv",
+    "data_dir": "/var/consul",
+    "encrypt": "{{ hostvars['balancer']['key']['stdout'] }}",
+    "log_level": "INFO",
+    "enable_syslog": true,
+    "ui": true,
+    "client_addr": "0.0.0.0"
+}

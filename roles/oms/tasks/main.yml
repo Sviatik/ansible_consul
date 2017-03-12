@@ -1,0 +1,49 @@
+---
+- name: copy oms
+  copy: 
+    src: OMS.war
+    dest: /tmp
+
+
+- name: create folder
+  file:
+    path: /tmp/WEB-INF
+    state: directory
+
+- name: create folder
+  file:
+    path: /tmp/WEB-INF/tiles
+    state: directory
+
+- name: copy hibernate conf
+  template:
+    src: hibernate.cfg.xml.j2
+    dest: /tmp/WEB-INF/hibernate.cfg.xml
+
+
+- name: copy header on web
+  template: 
+    src: header.html.j2
+    dest: /tmp/WEB-INF/tiles/header.html
+
+
+- name: add to war hibernate conf
+  shell: jar uf /tmp/OMS.war -C /tmp WEB-INF/hibernate.cfg.xml
+
+- name: add to war header 
+  shell: jar uf /tmp/OMS.war -C /tmp WEB-INF/tiles/header.html
+
+
+- name: copy OMS
+  copy: 
+    src: /tmp/OMS.war
+    dest: /usr/share/tomcat/webapps/
+    remote_src: yes
+
+- name: wait for deploy project
+  uri: 
+    url: http://{{ ansible_default_ipv4.address }}:8080/OMS
+  register: response
+  until: response.status == 200
+  retries: 20
+

@@ -1,0 +1,111 @@
+---
+- name: instal other soft
+  yum: name=vim state=present
+
+- name: add repo mariadb
+  template: 
+    src: repo.j2
+    dest: /etc/yum.repos.d/MariaDB.repo
+
+
+- name: install mariadb and requery soft
+  yum: state=present name={{ item }}
+  with_items: 
+    - MariaDB-server
+    - MariaDB-client
+    - galera 
+    - rsync
+    - MySQL-python  
+    - libsemanage-python
+  notify: 
+    start mariadb
+
+- meta: flush_handlers
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Open firewall for external access to MySQL
+  firewalld: service=mysql permanent=true immediate=true state=enabled
+
+- name: Open Galera ports on firewall
+  firewalld: port={{ item }} permanent=true immediate=true state=enabled
+  with_items:
+    - 4444/tcp
+    - 4567/tcp
+    - 4567/udp
+    - 4568/tcp
+    - 3306/tcp
+
+- name: MySQL | Add replication user user
+  mysql_user: 
+    name: '{{ mysql_user_cluster }}'
+    password: '{{ mysql_pass_cluster }}'
+    host: '%'
+    priv: '*.*:USAGE'
+    state: present
+
+- name: update prive replication user
+  mysql_user: 
+    append_privs: true
+    name: '{{ mysql_user_cluster }}'
+    password: '{{ mysql_pass_cluster }}'
+    host: '%'
+    priv: '*.*:ALL,GRANT'
+    state: present
+
+- name: send conf to master node
+  template:
+    src: server.cnf.master.j2
+    dest: /etc/my.cnf.d/server.cnf
+  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['Galera1']['ansible_all_ipv4_addresses'][0] }}'"
+  notify: 
+    restart master node
+
+- meta: flush_handlers
+
+
+- name: send conf to second node
+  template:
+    src: server.cnf.j2
+    dest: /etc/my.cnf.d/server.cnf
+  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}'"
+  notify:
+    restart mariadb
+
+- meta: flush_handlers
+
+- name: send conf to thried node
+  template:
+    src: server.cnf.j2
+    dest: /etc/my.cnf.d/server.cnf
+  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['Galera3']['ansible_all_ipv4_addresses'][0] }}'"
+  notify:
+    restart mariadb
+
+- meta: flush_handlers
+
+
+- name: MySQL | Add new user
+  mysql_user: 
+    name: '{{ mysql_user }}'
+    password: '{{ mysql_pass }}'
+    priv: '*.*:ALL,GRANT'
+    state: present
+  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}'"
+
+- name: MySQL | Add new user
+  mysql_user: 
+    name: '{{ mysql_user }}'
+    password: '{{ mysql_pass }}'
+    host: '%'
+    priv: '*.*:ALL,GRANT'
+    state: present
+  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}'"
+
+- name: MySQL | Add new DB
+  mysql_db:
+    name: '{{ mysql_db }}'
+    state: present
+  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}'"
