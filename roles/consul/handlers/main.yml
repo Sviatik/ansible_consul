@@ -6,3 +6,8 @@
 - name: start slave consul
   command: consul agent -data-dir=/var/lib/consul -node={{ inventory_hostname }} -bind={{ ansible_default_ipv4.address }} -config-dir=/etc/consul.d
   listen: consul slave start
+
+
+- name: restart server consul
+  shell: nohup consul agent -config-dir=/etc/consul.d/server &
+  listen: restart server consul

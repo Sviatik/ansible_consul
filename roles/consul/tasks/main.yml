@@ -4,16 +4,13 @@
   ignore_errors: yes
 
 - name: rm all conf1
-  file: path=/etc/consul state=absent
+  file: path=/etc/consul.d state=absent
 
 - name: rm all conf2
   file: path=/var/lib/consul state=absent
 
 - name: rm all conf3
   file: path=/var/consul state=absent
-
-- name: rm consul
-  file: path=/usr/bin/consul state=absent
 
 - name: rm consul
   file: path=/usr/local/bin/consul state=absent
@@ -25,21 +22,17 @@
     remote_src: True
     creates: /usr/bin/consul
 
-- name: conf firewall on master
-  firewalld: port=8300/tcp permanent=true immediate=true state=enabled
-  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}'"
+- name: debug firewall stop
+  shell: systemctl start firewalld
 
-- name: conf firewall on master
-  firewalld: port=8301/tcp permanent=true immediate=true state=enabled
-  when: "'{{ ansible_default_ipv4.address }}' != '{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}'"
+- name: conf firewalld
+  firewalld: port={{item}}/tcp permanent=true immediate=true state=enabled
+  with_items:
+    - 8300
+    - 8301
+    - 8500
+    - 8600
 
-- name: conf firewall on master
-  firewalld: port=8500/tcp permanent=true immediate=true state=enabled
-  when: "'{{ ansible_default_ipv4.address }}' != '{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}'"
-
-- name: conf firewall on master
-  firewalld: port=8500/tcp permanent=true immediate=true state=enabled
-  when: "'{{ ansible_default_ipv4.address }}' == '{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}'"
 
 - name: mkdir etc
   file: path=/etc/consul.d/{{ item }} state=directory recurse=yes
@@ -50,9 +43,6 @@
 
 - name: mkdir var
   file: path=/var/consul state=directory
-
-#- name: update system
-#  yum: name='*' state=latest
 
 - name: create encrypted key
   shell: consul keygen
@@ -68,23 +58,33 @@
 
 - name: copy conf server
   template: src=serv.conf.j2 dest=/etc/consul.d/server/config.json 
-  when: ansible_default_ipv4.address == hostvars['app1']['ansible_all_ipv4_addresses'][0] or ansible_default_ipv4.address == hostvars['app2']['ansible_all_ipv4_addresses'][0]
+  when: ansible_default_ipv4.address == hostvars['app1']['ansible_all_ipv4_addresses'][0] or 
+        ansible_default_ipv4.address == hostvars['app2']['ansible_all_ipv4_addresses'][0] or 
+        ansible_default_ipv4.address == hostvars['balancer']['ansible_all_ipv4_addresses'][0]
 
 - name: copy conf client
   template: src=client.conf.j2 dest=/etc/consul.d/client/config.json 
-  when: ansible_default_ipv4.address == hostvars['Galera1']['ansible_all_ipv4_addresses'][0] or ansible_default_ipv4.address == hostvars['Galera2']['ansible_all_ipv4_addresses'][0] or ansible_default_ipv4.address == hostvars['Galera3']['ansible_all_ipv4_addresses'][0]
+  when: ansible_default_ipv4.address == hostvars['Galera1']['ansible_all_ipv4_addresses'][0] or 
+        ansible_default_ipv4.address == hostvars['Galera2']['ansible_all_ipv4_addresses'][0] or 
+        ansible_default_ipv4.address == hostvars['Galera3']['ansible_all_ipv4_addresses'][0]
 
 
-- name: start master consul
+- name: start bootstrap server consul
   shell: nohup consul agent -config-dir=/etc/consul.d/bootstrap &
   when: ansible_default_ipv4.address == hostvars['balancer']['ansible_all_ipv4_addresses'][0]
 
-
-- name: start master consul
+- name: start servers consul
   shell: nohup consul agent -config-dir=/etc/consul.d/server &
-  when: ansible_default_ipv4.address == hostvars['app1']['ansible_all_ipv4_addresses'][0] or ansible_default_ipv4.address == hostvars['app2']['ansible_all_ipv4_addresses'][0]
+  when: ansible_default_ipv4.address == hostvars['app1']['ansible_all_ipv4_addresses'][0] or 
+        ansible_default_ipv4.address == hostvars['app2']['ansible_all_ipv4_addresses'][0]
 
 - name: start slave consul
   shell: nohup consul agent -config-dir=/etc/consul.d/client &
-  when: ansible_default_ipv4.address == hostvars['Galera1']['ansible_all_ipv4_addresses'][0] or ansible_default_ipv4.address == hostvars['Galera2']['ansible_all_ipv4_addresses'][0] or ansible_default_ipv4.address == hostvars['Galera3']['ansible_all_ipv4_addresses'][0]
+  when: ansible_default_ipv4.address == hostvars['Galera1']['ansible_all_ipv4_addresses'][0] or 
+        ansible_default_ipv4.address == hostvars['Galera2']['ansible_all_ipv4_addresses'][0] or 
+        ansible_default_ipv4.address == hostvars['Galera3']['ansible_all_ipv4_addresses'][0]
 
+- name: stop bootstrap server consul
+  shell: nohup consul agent -config-dir=/etc/consul.d/server &
+  when: ansible_default_ipv4.address == hostvars['balancer']['ansible_all_ipv4_addresses'][0]
+  notify: restart server consul

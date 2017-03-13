@@ -1,5 +1,5 @@
 {
-    "bootstrap": true,
+    "bootstrap_expect": 3,
     "server": true,
     "datacenter": "lviv",
     "data_dir": "/var/consul",
@@ -7,5 +7,7 @@
     "log_level": "INFO",
     "enable_syslog": true,
     "ui": true,
-    "client_addr": "0.0.0.0"
+    "client_addr": "0.0.0.0",
+    "bind_addr": "{{ ansible_default_ipv4.address }}",
+    "node_name": "{{ inventory_hostname }}"
 }

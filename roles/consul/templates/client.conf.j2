@@ -7,5 +7,7 @@
     "enable_syslog": true,
     "ui": true,
     "client_addr": "0.0.0.0",
+    "bind_addr": "{{ ansible_default_ipv4.address }}",
+    "node_name": "{{ inventory_hostname }}",
     "start_join": ["{{ hostvars['app1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['app2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera3']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}"]
 }
