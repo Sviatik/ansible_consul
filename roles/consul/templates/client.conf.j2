@@ -2,12 +2,39 @@
     "server": false,
     "datacenter": "lviv",
     "data_dir": "/var/consul",
-    "encrypt": "{{ hostvars['balancer']['key']['stdout'] }}",
+    "encrypt": "{{ hostvars['consul']['key']['stdout'] }}",
     "log_level": "INFO",
     "enable_syslog": true,
     "ui": true,
     "client_addr": "0.0.0.0",
     "bind_addr": "{{ ansible_default_ipv4.address }}",
     "node_name": "{{ inventory_hostname }}",
-    "start_join": ["{{ hostvars['app1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['app2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera3']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}"]
+    "start_join": ["{{ hostvars['app1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['app2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera1']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera2']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['Galera3']['ansible_all_ipv4_addresses'][0] }}", "{{ hostvars['balancer']['ansible_all_ipv4_addresses'][0] }}"],
+    "checks": [
+    {
+      "id": "check-load",
+      "name": "check-load",
+      "script": "/usr/lib64/nagios/plugins/check_load -w 1,2,3 -c 2,3,4",
+      "interval": "10s"
+    },
+    {
+      "id": "check_mem_utilization",
+      "notes": "Greater than 50% warn, greater than 75% fail.",
+      "name": "MEM Utilization",
+      "script": "/etc/consul.d/scripts/mem_utilization.sh",
+      "interval": "10s"
+    },
+    {
+      "id": "check-disk",
+      "name": "check-disk",
+      "script": "/usr/lib64/nagios/plugins/check_disk -w 30% -c 5%",
+      "interval": "10s"
+    },
+    {
+      "id": "check-users",
+      "name": "check-users",
+      "script": "/usr/lib64/nagios/plugins/check_users -w 3 -c 4",
+      "interval": "10s"
+    }
+  ]
 }

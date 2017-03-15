@@ -10,4 +10,4 @@
     name: _055_DB
     state: import
     target: /tmp/addData.sql
-  run_once: true
+    single_transaction: yes

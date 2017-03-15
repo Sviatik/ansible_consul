@@ -1,12 +1,4 @@
 ---
-- name: conf app server
-  gather_facts: True
-  become: yes
-  become_method: sudo
-  hosts: all
-  roles:
-     - consul
-
 - name: ssh add known_hosts
   hosts: all
   connection: local
@@ -14,13 +6,22 @@
   roles:
     - ssh
 
-- name: conf app server
+
+- name: conf generic
   gather_facts: True
   become: yes
   become_method: sudo
   hosts: all
   roles:
      - generic
+
+- name: conf consul server
+  gather_facts: True
+  become: yes
+  become_method: sudo
+  hosts: all
+  roles:
+     - consul
 
 - name: conf galera
   gather_facts: True
@@ -57,5 +58,5 @@
   hosts: Galera2
   roles: 
      - restoredb
-
+  
 

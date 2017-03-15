@@ -8,4 +8,4 @@ Galera1 ansible_host=192.168.0.110
 Galera2 ansible_host=192.168.0.108
 Galera3 ansible_host=192.168.0.107
 [consul]
-consul ansible_host=192.168.0.104
+consul ansible_host=192.168.0.100

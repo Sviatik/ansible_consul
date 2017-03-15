@@ -1,12 +1,19 @@
 ---
+- name: add epel-release
+  yum: name=epel-release state=present
+
 - name: common soft
   yum: state=present name={{ item }}
   with_items: 
         - unzip
-        - epel-release
         - wget
         - net-tools
-
+        - bc
+        - htop.x86_64
+        - nagios-plugins-disk
+        - nagios-plugins-load
+        - nagios-plugins-users
+        
 #- name: update system
 #  yum: name='*' state=latest
 
